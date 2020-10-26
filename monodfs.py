@@ -8,10 +8,13 @@ class Sorter:
   def __init__(self, m, n):
     self.m = m                # Number of monopoles
     self.n = n                # Number of rooms to sort into
-
-    self.rooms = [] #[list() for x in range(n)]
+    self.rooms = []           # Captures the result as a lazy escape from recursion
       
 
+  # Takes an array of integers and a new integer to add
+  # Checks if adding the new integer violates X+Y=Z constraint
+  # returns 0 if it should not be added
+  # returns 1 if it can be added
   def tripleCheck(self, intSet, integer):
     if integer in intSet:
       return 0
@@ -22,18 +25,23 @@ class Sorter:
             return 0
     return 1
 
-
+  # Recursively tries to add allowed integers 1-m
+  # to 1-m rooms. If a dead end it hit and m ints
+  # don't fit into n rooms, the recursion returns
+  # and removes the last integer added and attempts
+  # to add to the next room.
   def recursive(self, sets, integer):
     if(integer > self.m):
       return
     for i in sets:
+      # Check if for X,Y,Z, X+Y=Z. Enter on return 1
       if self.tripleCheck(i, integer):
-        i.append(integer)
-        self.recursive(sets, integer+1)
-        if(integer <= self.m):
-          i.remove(integer)
-        if(integer == self.m):
+        i.append(integer) #add new integer
+        self.recursive(sets, integer+1) #add to room
+        if(integer == self.m):  #capture solution
           self.rooms = [row[:] for row in sets]
+        if(integer <= self.m):  #remove if dead end was hit
+          i.remove(integer)
 
 
     
@@ -66,6 +74,17 @@ def main():
   if not sorter.rooms:
     print("Unsat")
   else:
+    # Check that all numbers are represened in solution
+    test_case = []
+    for i in sorter.rooms:
+      test_case += i
+    test_case.sort()
+    if(test_case == [item for item in range(1,m+1)]):
+      print("SUCCESS!")
+    else:
+      print("Invalid Solution Found: Not all monopoles are present")
+     
+    # Print solution with "Room x: []" format
     for i in range(len(sorter.rooms)):
       print("Room", i,":", sorter.rooms[i])
 
